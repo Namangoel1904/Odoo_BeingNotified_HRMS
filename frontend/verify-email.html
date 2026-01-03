@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Verify Email - Dayflow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { "primary": "#197fe6", "background-light": "#f6f7f8", "background-dark": "#111921" },
+                    fontFamily: { "display": ["Inter", "sans-serif"] },
+                },
+            },
+        }
+    </script>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark font-display text-[#0e141b] dark:text-white flex items-center justify-center min-h-screen p-4">
+    <div
+        class="w-full max-w-md bg-white dark:bg-[#1a2634] rounded-xl shadow-lg border border-[#e7edf3] dark:border-[#2a3b4d] overflow-hidden">
+        <div class="p-8 text-center">
+            <div
+                class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 text-primary">
+                <span class="material-symbols-outlined text-[32px]">mark_email_unread</span>
+            </div>
+            <h1 class="text-2xl font-bold mb-2">Verify your Email</h1>
+            <p class="text-[#4e7397] dark:text-gray-400 mb-8">
+                Please verify your email address to continue accessing your dashboard.
+            </p>
+
+            <button id="verifyBtn"
+                class="w-full bg-primary hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                <span>Verify Now</span>
+                <span class="material-symbols-outlined text-[20px]">check_circle</span>
+            </button>
+
+            <div class="mt-6">
+                <button id="logoutBtn" class="text-sm text-[#4e7397] hover:text-primary underline">Log out</button>
+            </div>
+        </div>
+    </div>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/verify-email.js"></script>
+</body>
+
+</html>

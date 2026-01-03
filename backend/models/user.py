@@ -16,6 +16,7 @@ class User(Base, BaseModel):
     role = Column(Enum(UserRole), default=UserRole.EMPLOYEE, nullable=False)
     must_change_password = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
+    is_verified = Column(Boolean, default=False) # Email verification status
 
     # Relationships can be defined here if needed, but for now we keep it clean.
     # Inverse relationships will be defined in other models.

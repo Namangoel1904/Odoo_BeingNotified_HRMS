@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from backend.models.user import UserRole, User
 from backend.models.employee import Employee
+from backend.models.payroll import SalaryStructure
+from backend.services.salary_service import SalaryService
 from backend.api.deps import RoleChecker, get_current_active_user, get_db
 from backend.schemas.hr import CreateEmployeeSchema, CreateEmployeeResponse
 from backend.core.security import get_password_hash
@@ -95,6 +97,34 @@ def create_employee(
             profile_picture_url=None
         )
         db.add(new_employee)
+        db.flush() # Need employee ID
+        
+        # 3. Create Salary Structure
+        salary_calc = SalaryService.calculate_salary_structure(emp_data.monthly_wage)
+        
+        new_salary = SalaryStructure(
+            employee_id=new_employee.id,
+            wage=salary_calc['wage'],
+            basic_percentage=50.0, # Default
+            hra_percentage=50.0,
+            pf_employee_percentage=12.0,
+            pf_employer_percentage=12.0,
+            professional_tax=salary_calc['professional_tax'],
+            
+            basic_component=salary_calc['basic_component'],
+            hra_component=salary_calc['hra_component'],
+            standard_allowance=salary_calc['standard_allowance'],
+            performance_bonus=salary_calc['performance_bonus'],
+            leave_travel_allowance=salary_calc['leave_travel_allowance'],
+            fixed_allowance=salary_calc['fixed_allowance'],
+            
+            pf_employee_amount=salary_calc['pf_employee_amount'],
+            pf_employer_amount=salary_calc['pf_employer_amount'],
+            
+            effective_from=emp_data.joining_date
+        )
+        db.add(new_salary)
+
         db.commit()
         db.refresh(new_employee)
         
@@ -108,3 +138,369 @@ def create_employee(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+from backend.models.work import Attendance, LeaveRequest, LeaveStatus, LeaveType
+from backend.models.ticket import Ticket, TicketStatus
+from backend.schemas.hr import HRDashboardStats
+import datetime
+
+@router.get("/dashboard-stats", response_model=HRDashboardStats, dependencies=[Depends(allow_hr)])
+def get_hr_dashboard_stats(db: Session = Depends(get_db)):
+    today = datetime.date.today()
+    
+    # 1. Total Employees
+    total_employees = db.query(Employee).count()
+    
+    # 2. Present Today
+    present_today = db.query(Attendance).filter(
+        Attendance.date == today,
+        Attendance.check_in.isnot(None)
+    ).count()
+    
+    # 3. On Leave Today
+    # Check for approved leaves that cover today
+    on_leave_today = db.query(LeaveRequest).filter(
+        LeaveRequest.status == LeaveStatus.APPROVED,
+        LeaveRequest.start_date <= today,
+        LeaveRequest.end_date >= today
+    ).count()
+    
+    # 4. Pending Leaves
+    pending_leaves = db.query(LeaveRequest).filter(
+        LeaveRequest.status == LeaveStatus.PENDING
+    ).count()
+    
+    # 5. Open Tickets
+    open_tickets = db.query(Ticket).filter(
+        Ticket.status.in_([TicketStatus.OPEN, TicketStatus.IN_PROGRESS])
+    ).count()
+    
+    return {
+        "total_employees": total_employees,
+        "present_today": present_today,
+        "on_leave_today": on_leave_today,
+        "pending_leaves": pending_leaves,
+
+        "open_tickets": open_tickets
+    }
+
+from typing import List, Optional
+from backend.schemas.hr import HREmployeeSummary
+
+@router.get("/employees", response_model=List[HREmployeeSummary], dependencies=[Depends(allow_hr)])
+def get_all_employees(db: Session = Depends(get_db)):
+    employees = db.query(Employee).join(User, Employee.user_id == User.id).all()
+    results = []
+    for emp in employees:
+        results.append(HREmployeeSummary(
+            public_id=emp.public_id,
+            employee_code=emp.employee_code,
+            full_name=emp.full_name,
+            department=emp.department,
+            job_title=emp.job_title,
+            profile_picture_url=emp.profile_picture_url,
+            is_active=emp.user.is_active if emp.user else False,
+            email=emp.user.email if emp.user else "" 
+        ))
+    return results
+
+from backend.schemas.hr import HRAttendanceToday, HRAttendanceHistory
+
+@router.get("/attendance/today", response_model=List[HRAttendanceToday], dependencies=[Depends(allow_hr)])
+def get_today_attendance(db: Session = Depends(get_db)):
+    today = datetime.date.today()
+    employees = db.query(Employee).all()
+    results = []
+    
+    # Batch fetch attendance for today
+    attendances = db.query(Attendance).filter(Attendance.date == today).all()
+    att_map = {att.employee_id: att for att in attendances}
+
+    # Batch fetch approved leaves for today
+    today_leaves = db.query(LeaveRequest).filter(
+        LeaveRequest.status == LeaveStatus.APPROVED,
+        LeaveRequest.start_date <= today,
+        LeaveRequest.end_date >= today
+    ).all()
+    leave_emp_ids = {leave.employee_id for leave in today_leaves}
+
+    for emp in employees:
+        att = att_map.get(emp.id)
+        status_str = "Absent"
+        check_in = None
+        check_out = None
+        
+        if att and att.check_in:
+             check_in = att.check_in
+             check_out = att.check_out
+             status_str = "Present"
+        elif emp.id in leave_emp_ids:
+            status_str = "On Leave"
+        else:
+            status_str = "Absent"
+        
+        results.append(HRAttendanceToday(
+            employee_id=emp.public_id,
+            employee_name=emp.full_name,
+            department=emp.department,
+            check_in=check_in,
+            check_out=check_out,
+            status=status_str,
+            profile_picture_url=emp.profile_picture_url
+        ))
+    return results
+
+@router.get("/attendance/history/{employee_public_id}", response_model=List[HRAttendanceHistory], dependencies=[Depends(allow_hr)])
+def get_attendance_history_hr(employee_public_id: str, db: Session = Depends(get_db)):
+    emp = db.query(Employee).filter(Employee.public_id == employee_public_id).first()
+    if not emp:
+        raise HTTPException(status_code=404, detail="Employee not found")
+        
+    atts = db.query(Attendance).filter(Attendance.employee_id == emp.id).order_by(Attendance.date.desc()).limit(30).all()
+    
+    return [
+        HRAttendanceHistory(
+            date=a.date,
+            check_in=a.check_in,
+            check_out=a.check_out,
+            status=a.status.value
+        ) for a in atts
+    ]
+
+from backend.schemas.hr import HRLeaveRequestResponse, LeaveActionRequest
+from backend.models.work import LeaveStatus
+
+@router.get("/leaves", response_model=List[HRLeaveRequestResponse], dependencies=[Depends(allow_hr)])
+def get_all_leaves(status: Optional[str] = None, db: Session = Depends(get_db)):
+    query = db.query(LeaveRequest).join(Employee).order_by(LeaveRequest.created_at.desc())
+    if status and status.upper() in LeaveStatus.__members__:
+         query = query.filter(LeaveRequest.status == LeaveStatus[status.upper()])
+    
+    leaves = query.all()
+    results = []
+    for leave in leaves:
+        results.append(HRLeaveRequestResponse(
+            id=leave.id,
+            public_id=leave.public_id,
+            employee_name=leave.employee.full_name,
+            employee_code=leave.employee.employee_code,
+            leave_type=leave.leave_type.value,
+            start_date=leave.start_date,
+            end_date=leave.end_date,
+            reason=leave.reason,
+            status=leave.status.value,
+            attachment_url=leave.attachment_url,
+            created_at=leave.created_at,
+            hr_remarks=leave.review_comment
+        ))
+    return results
+
+
+
+@router.put("/leaves/{public_id}/action", dependencies=[Depends(allow_hr)])
+def approve_reject_leave(public_id: str, action_req: LeaveActionRequest, db: Session = Depends(get_db)):
+    leave = db.query(LeaveRequest).filter(LeaveRequest.public_id == public_id).first()
+    if not leave:
+        raise HTTPException(status_code=404, detail="Leave request not found")
+    
+    if action_req.action == "APPROVE":
+        leave.status = LeaveStatus.APPROVED
+    elif action_req.action == "REJECT":
+        leave.status = LeaveStatus.REJECTED
+    else:
+        raise HTTPException(status_code=400, detail="Invalid action")
+    
+    if action_req.remarks:
+        leave.review_comment = action_req.remarks
+    
+    db.commit()
+    return {"message": f"Leave request {action_req.action.lower()}ed successfully"}
+
+from backend.schemas.hr import HRTicketResponse, TicketActionRequest
+
+@router.get("/tickets", response_model=List[HRTicketResponse], dependencies=[Depends(allow_hr)])
+def get_all_tickets(status: Optional[str] = None, db: Session = Depends(get_db)):
+    query = db.query(Ticket).join(Employee).order_by(Ticket.created_at.desc())
+    
+    if status and status.upper() in TicketStatus.__members__:
+         query = query.filter(Ticket.status == TicketStatus[status.upper()])
+    
+    tickets = query.all()
+    results = []
+    for t in tickets:
+        results.append(HRTicketResponse(
+            id=t.id,
+            public_id=t.public_id,
+            employee_name=t.employee.full_name,
+            employee_code=t.employee.employee_code,
+            category=t.category,
+            subject=t.subject,
+            description=t.description,
+            status=t.status,
+            resolution=t.resolution,
+            created_at=t.created_at
+        ))
+    return results
+
+@router.put("/tickets/{public_id}/status", dependencies=[Depends(allow_hr)])
+def update_ticket_status(public_id: str, action_req: TicketActionRequest, db: Session = Depends(get_db)):
+    ticket = db.query(Ticket).filter(Ticket.public_id == public_id).first()
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    
+    if action_req.status.upper() not in TicketStatus.__members__:
+        raise HTTPException(status_code=400, detail="Invalid status")
+        
+    ticket.status = TicketStatus[action_req.status.upper()]
+    if action_req.resolution:
+        ticket.resolution = action_req.resolution
+        
+    db.commit()
+    return {"message": "Ticket updated successfully"}
+
+from backend.schemas.hr import HRSalaryResponse, SalaryUpdateRequest
+from backend.models.payroll import SalaryStructure
+
+@router.get("/salary/{public_id}", response_model=HRSalaryResponse, dependencies=[Depends(allow_hr)])
+def get_employee_salary(public_id: str, db: Session = Depends(get_db)):
+    emp = db.query(Employee).filter(Employee.public_id == public_id).first()
+    if not emp:
+        raise HTTPException(status_code=404, detail="Employee not found")
+        
+    salary = db.query(SalaryStructure).filter(SalaryStructure.employee_id == emp.id).first()
+    if not salary:
+        raise HTTPException(status_code=404, detail="Salary structure not found")
+        
+    # Calculate Net
+    earnings = (salary.basic_component + salary.hra_component + salary.standard_allowance + 
+               salary.performance_bonus + salary.leave_travel_allowance + salary.fixed_allowance)
+    deductions = salary.pf_employee_amount + salary.professional_tax
+    net_salary = earnings - deductions
+    
+    return HRSalaryResponse(
+        employee_id=emp.public_id,
+        wage=salary.wage,
+        basic_component=salary.basic_component,
+        hra_component=salary.hra_component,
+        standard_allowance=salary.standard_allowance,
+        performance_bonus=salary.performance_bonus,
+        leave_travel_allowance=salary.leave_travel_allowance,
+        fixed_allowance=salary.fixed_allowance,
+        pf_employee_amount=salary.pf_employee_amount,
+        pf_employer_amount=salary.pf_employer_amount,
+        professional_tax=salary.professional_tax,
+        net_salary=net_salary
+    )
+
+@router.put("/salary/{public_id}", dependencies=[Depends(allow_hr)])
+def update_employee_salary(public_id: str, req: SalaryUpdateRequest, db: Session = Depends(get_db)):
+    emp = db.query(Employee).filter(Employee.public_id == public_id).first()
+    if not emp:
+        raise HTTPException(status_code=404, detail="Employee not found")
+        
+    salary = db.query(SalaryStructure).filter(SalaryStructure.employee_id == emp.id).first()
+    if not salary:
+        # Create if missing? For now assume it exists or error. 
+        # Ideally create new logic.
+        raise HTTPException(status_code=404, detail="Salary structure not found")
+
+    # Recalculate
+    new_struct = SalaryService.calculate_salary_structure(req.monthly_wage)
+    
+    salary.wage = new_struct['wage']
+    salary.basic_component = new_struct['basic_component']
+    salary.hra_component = new_struct['hra_component']
+    salary.standard_allowance = new_struct['standard_allowance']
+    salary.performance_bonus = new_struct['performance_bonus']
+    salary.leave_travel_allowance = new_struct['leave_travel_allowance']
+    salary.fixed_allowance = new_struct['fixed_allowance']
+    salary.pf_employee_amount = new_struct['pf_employee_amount']
+    salary.pf_employer_amount = new_struct['pf_employer_amount']
+    salary.professional_tax = new_struct['professional_tax']
+    
+    db.commit()
+    return {"message": "Salary updated successfully"}
+
+from backend.schemas.employee import EmployeeProfileResponse, EmployeeProfileUpdate
+
+@router.get("/employees/{public_id}/profile", response_model=EmployeeProfileResponse, dependencies=[Depends(allow_hr)])
+def get_hr_employee_profile(public_id: str, db: Session = Depends(get_db)):
+    emp = db.query(Employee).filter(Employee.public_id == public_id).first()
+    if not emp:
+        raise HTTPException(status_code=404, detail="Employee not found")
+
+    # Fetch salary for components (reuse logic from employee.py if possible, or duplicate for now)
+    salary_structure = db.query(SalaryStructure).filter(SalaryStructure.employee_id == emp.id).first()
+    
+    # Calculate net if salary exists, else 0
+    net_salary = 0.0
+    salary_dict = {}
+    if salary_structure:
+        salary_dict = {
+            "wage": salary_structure.wage,
+            "basic_component": salary_structure.basic_component,
+            "hra_component": salary_structure.hra_component,
+            "standard_allowance": salary_structure.standard_allowance,
+            "performance_bonus": salary_structure.performance_bonus,
+            "leave_travel_allowance": salary_structure.leave_travel_allowance,
+            "fixed_allowance": salary_structure.fixed_allowance,
+            "pf_employee_amount": salary_structure.pf_employee_amount,
+            "professional_tax": salary_structure.professional_tax,
+        }
+        earnings = (salary_structure.basic_component + salary_structure.hra_component + 
+                    salary_structure.standard_allowance + salary_structure.performance_bonus + 
+                    salary_structure.leave_travel_allowance + salary_structure.fixed_allowance)
+        deductions = salary_structure.pf_employee_amount + salary_structure.professional_tax
+        net_salary = earnings - deductions
+    
+    return EmployeeProfileResponse(
+        name=emp.name,
+        email=emp.email,
+        job_role=emp.job_role,
+        department=emp.department,
+        employee_code=emp.employee_code,
+        joining_date=emp.joining_date,
+        profile_picture_url=emp.profile_picture_url,
+        
+        # Resume Fields
+        address=emp.address,
+        phone_number=emp.phone_number,
+        about_me=emp.about_me,
+        job_love=emp.job_love,
+        interests=emp.interests,
+        skills=emp.skills,
+        certifications=emp.certifications,
+        
+        # Salary Fields
+        **salary_dict,
+        net_salary=net_salary
+    )
+
+@router.put("/employees/{public_id}/profile", dependencies=[Depends(allow_hr)])
+def update_hr_employee_profile(public_id: str, profile_update: EmployeeProfileUpdate, db: Session = Depends(get_db)):
+    emp = db.query(Employee).filter(Employee.public_id == public_id).first()
+    if not emp:
+        raise HTTPException(status_code=404, detail="Employee not found")
+        
+    if profile_update.address is not None:
+        emp.address = profile_update.address
+    if profile_update.phone_number is not None:
+        emp.phone_number = profile_update.phone_number
+        
+    # Update Resume Fields
+    if profile_update.about_me is not None:
+        emp.about_me = profile_update.about_me
+    if profile_update.job_love is not None:
+        emp.job_love = profile_update.job_love
+    if profile_update.interests is not None:
+        emp.interests = profile_update.interests
+    if profile_update.skills is not None:
+        emp.skills = profile_update.skills
+    if profile_update.certifications is not None:
+        emp.certifications = profile_update.certifications
+
+    db.commit()
+    db.refresh(emp)
+    
+    # Return updated profile (could call get_hr_employee_profile logic, but simplified return is fine or nothing)
+    return {"message": "Profile updated successfully"}

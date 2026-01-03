@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>HR Employee List - Dayflow</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#197fe6",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111921",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a2430",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom scrollbar for better aesthetic */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased overflow-x-hidden">
+    <div class="relative flex h-screen w-full flex-col overflow-hidden">
+        <!-- Header -->
+        <header
+            class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 bg-surface-light dark:bg-surface-dark px-10 py-3 shrink-0">
+            <div class="flex items-center gap-4">
+                <div class="size-8 text-primary">
+                    <svg fill="currentColor" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z">
+                        </path>
+                    </svg>
+                </div>
+                <h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Dayflow
+                </h2>
+            </div>
+            <div class="flex-1 justify-end gap-8">
+                <div class="flex items-center gap-9 hidden md:flex">
+                    <a class="text-slate-600 dark:text-slate-400 hover:text-primary text-sm font-medium leading-normal transition-colors"
+                        href="hr-dashboard.html">Dashboard</a>
+                    <a class="text-primary text-sm font-bold leading-normal" href="hr-employees.html">Employees</a>
+                    <a class="text-slate-600 dark:text-slate-400 hover:text-primary text-sm font-medium leading-normal transition-colors"
+                        href="hr-salary.html">Payroll</a>
+                    <!-- <a class="text-slate-600 dark:text-slate-400 hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Settings</a> -->
+                </div>
+                <div class="flex items-center gap-4">
+                    <button id="logoutBtn"
+                        class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-4 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-sm font-bold leading-normal tracking-[0.015em]">
+                        <span class="truncate">Log Out</span>
+                    </button>
+                    <div class="bg-center bg-no-repeat bg-cover rounded-full size-10 border border-slate-200 dark:border-slate-700"
+                        data-alt="User profile avatar showing a smiling person"
+                        style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBuCPe-T5b5ap-r1FuW9xM1wCG0Q3IQB_saJYWpoNaxWuFuNd6b6sZzlSC3D1hkoaE0l7VCRJAv7qPWGWiatnyUbTGieQPtTngP2XdJ8aNodr9PjE_WJwvtvZLHLhFB2hFeCdw9F0D7ycGWY8CwxpcP_-m25E2gMg2movDJowhqJ96RyZSxE6SUjAMs07Cf55pa7l0cF4Hmragt-gzHLruGa7DSKvdOyetPPV8dN4CRpzThadFMQ5fMaAGTDq1vCGhasgRJ-YMLawA");'>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto px-4 py-8 sm:px-10 lg:px-20">
+            <div class="mx-auto max-w-7xl flex flex-col gap-6">
+                <!-- Breadcrumbs -->
+                <nav class="flex items-center gap-2 text-sm">
+                    <a class="text-slate-500 dark:text-slate-400 hover:text-primary font-medium"
+                        href="hr-dashboard.html">Home</a>
+                    <span class="text-slate-400 dark:text-slate-600 font-medium">/</span>
+                    <span class="text-slate-900 dark:text-white font-medium">Employees</span>
+                </nav>
+                <!-- Page Heading & Actions -->
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div class="flex flex-col gap-1">
+                        <h1
+                            class="text-slate-900 dark:text-white text-3xl sm:text-4xl font-black leading-tight tracking-[-0.033em]">
+                            Employees</h1>
+                        <p class="text-slate-500 dark:text-slate-400 text-base font-normal">Manage your organization's
+                            employee records</p>
+                    </div>
+                    <button onclick="window.location.href='create-employee.html'"
+                        class="flex items-center justify-center gap-2 rounded-lg h-10 px-5 bg-primary hover:bg-blue-600 text-white shadow-sm transition-colors text-sm font-bold leading-normal">
+                        <span class="material-symbols-outlined text-[20px]">add</span>
+                        <span class="truncate">Add New Employee</span>
+                    </button>
+                </div>
+                <!-- Filters & Search -->
+                <div
+                    class="flex flex-col sm:flex-row gap-4 items-center bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
+                    <div class="relative flex-1 w-full sm:max-w-md">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined text-slate-400">search</span>
+                        </div>
+                        <input id="searchInput"
+                            class="block w-full rounded-lg border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 pl-10 pr-3 py-2.5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm"
+                            placeholder="Search by name, ID, or job title..." type="text" />
+                    </div>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <!-- Filter Buttons (Optional implementation) -->
+                    </div>
+                </div>
+                <!-- Table Container -->
+                <div
+                    class="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-surface-light dark:bg-surface-dark shadow-sm">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                            <thead class="bg-slate-50 dark:bg-slate-900/50">
+                                <tr>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                                        scope="col">Name</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                                        scope="col">Employee ID</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 hidden sm:table-cell"
+                                        scope="col">Department</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 hidden md:table-cell"
+                                        scope="col">Job Title</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                                        scope="col">Status</th>
+                                    <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                                        scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hr-employees-table-body"
+                                class="divide-y divide-slate-200 dark:divide-slate-800 bg-surface-light dark:bg-surface-dark">
+                                <!-- Rows will be populated by JS -->
+                                <!-- Row 2 -->
+                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                                    <td class="whitespace-nowrap px-6 py-4">
+                                        <div class="flex items-center">
+                                            <div
+                                                class="h-10 w-10 flex-shrink-0 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                                                <img alt="" class="h-full w-full object-cover"
+                                                    data-alt="Portrait of Michael Chen"
+                                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuADCGlQlzJiTZvZclxj1zuhFETJKZHVkX0m4j5BWLKqi95Y_FCP3KGMg3TQKTF9LesnTXTIt6vsQdTM2dWYWsWYLCzSlzyKn715iIb58JbiY3pQUvVB7_xP-bVbX_2BuRghEdcp2wY9zJB5by7ynF1hYZxD0v_f1adWwDnZiU68GGBNeAki6-xTa4Sqcm_-f6mUwtwK0CXflrEpc77sHANIQ9tkO-1oOOJJ90o65owmAZDijRguWlolowsdwSS_AXf2ddIjRS3HMrw" />
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="font-medium text-slate-900 dark:text-white">Michael Chen
+                                                </div>
+                                                <div class="text-sm text-slate-500 dark:text-slate-400 md:hidden">CMO
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td
+                                        class="whitespace-nowrap px-6 py-4 text-sm text-slate-600 dark:text-slate-300 font-mono">
+                                        EMP-002</td>
+                                    <td
+                                        class="whitespace-nowrap px-6 py-4 text-sm text-slate-600 dark:text-slate-300 hidden sm:table-cell">
+                                        <span
+                                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">Marketing</span>
+                                    </td>
+                                    <td
+                                        class="whitespace-nowrap px-6 py-4 text-sm text-slate-600 dark:text-slate-300 hidden md:table-cell">
+                                        CMO</td>
+                                    <td class="whitespace-nowrap px-6 py-4">
+                                        <span
+                                            class="inline-flex rounded-full bg-slate-100 dark:bg-slate-700 px-2.5 py-1 text-xs font-semibold leading-5 text-slate-600 dark:text-slate-400">Inactive</span>
+                                    </td>
+                                    <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                                        <button
+                                            class="text-primary hover:text-blue-700 dark:hover:text-blue-400 flex items-center justify-end gap-1 ml-auto group-hover:underline">
+                                            <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                            View
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- Row 3 -->
+                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                                    <td class="whitespace-nowrap px-6 py-4">
+                                        <div class="flex items-center">
+                                            <div
+                                                class="h-10 w-10 flex-shrink-0 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                                                <img alt="" class="h-full w-full object-cover"
+                                                    data-alt="Portrait of Amelia Wright"
+                                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKXiZ7tc6BFKk3sYJ_68OngiXbbxHjyLZuZUaR51Zy1HPA1p6sDLKQpPkILPzyCD2HKdlaGXgUx29mVCAsq_6eo0U3mVkySs3oXJs5S7M6Zc60TdWQQoN4oGCIkv80jVceq61DO1IoT-sV2btp4ZV0q_hjasvj-1LfFmgf0sfsFJIR7MD76OVEpEcqaTu0Dv648b0EvlfdVbwrc0Kn618rXUq1tbRtu9-nXMX2VI_1zU8eOaCIjw32NqmuehCyDuypzRrYcjhaNfI" />
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="font-medium text-slate-900 dark:text-white">Amelia Wright
+                                                </div>
+                                                <div class="text-sm text-slate-500 dark:text-slate-400 md:hidden">HR
+                                                    Manager</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td
+                                        class="whitespace-nowrap px-6 py-4 text-sm text-slate-600 dark:text-slate-300 font-mono">
+                                        EMP-003</td>
+                                    <td
+                                        class="whitespace-nowrap px-6 py-4 text-sm text-slate-600 dark:text-slate-300 hidden sm:table-cell">
+                                        <span
+                                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-pink-50 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300">Human
+                                            Resources</span>
+                                    </td>
+                                    <td
+                                        class="whitespace-nowrap px-6 py-4 text-sm text-slate-600 dark:text-slate-300 hidden md:table-cell">
+                                        HR Manager</td>
+                                    <td class="whitespace-nowrap px-6 py-4">
+                                        <span
+                                            class="inline-flex rounded-full bg-green-100 dark:bg-green-900/30 px-2.5 py-1 text-xs font-semibold leading-5 text-green-800 dark:text-green-300">Active</span>
+                                    </td>
+                                    <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                                        <button
+                                            class="text-primary hover:text-blue-700 dark:hover:text-blue-400 flex items-center justify-end gap-1 ml-auto group-hover:underline">
+                                            <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                            View
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination code removed for now as we just list all, or keep it static structure -->
+                    <div
+                        class="border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 px-4 py-3 sm:px-6">
+                        <!-- Pagination controls can remain but won't be functional yet -->
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div class="text-sm text-slate-500 dark:text-slate-400">
+                                Showing <span class="font-medium text-slate-900 dark:text-white">1</span> to <span
+                                    class="font-medium text-slate-900 dark:text-white">5</span> of <span
+                                    class="font-medium text-slate-900 dark:text-white">45</span> results
+                            </div>
+                            <div class="flex gap-2">
+                                <button
+                                    class="relative inline-flex items-center rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    disabled="">
+                                    Previous
+                                </button>
+                                <button
+                                    class="relative inline-flex items-center rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/hr-employees.js"></script>
+</body>
+
+</html>

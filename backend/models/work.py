@@ -41,6 +41,7 @@ class LeaveRequest(Base, BaseModel):
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
     reason = Column(Text, nullable=False)
+    attachment_url = Column(Text, nullable=True) # For sick leave certificate
     
     status = Column(Enum(LeaveStatus), default=LeaveStatus.PENDING, nullable=False)
     reviewed_by = Column(Integer, ForeignKey("users.id"), nullable=True)

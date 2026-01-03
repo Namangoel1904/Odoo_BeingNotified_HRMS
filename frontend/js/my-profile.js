@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fullName: Array.from(document.querySelectorAll('p')).find(p => p.previousElementSibling?.textContent.trim().toUpperCase() === 'FULL NAME'),
 
         details: {
-            fullName: findValueByLabel('Full Name'), // Fallback if IDs fail, but we added IDs
+            fullName: document.getElementById('view-full-name'),
 
             // Targeted via IDs now
             gender: document.getElementById('view-gender'),
@@ -43,6 +43,19 @@ document.addEventListener('DOMContentLoaded', () => {
             ecName: document.getElementById('view-ec-name'),
             ecRelation: document.getElementById('view-ec-relation'),
             ecPhone: document.getElementById('view-ec-phone'),
+
+            // Resume Fields
+            aboutMe: document.getElementById('view-about-me'),
+            jobLove: document.getElementById('view-job-love'),
+            interests: document.getElementById('view-interests'),
+            skills: document.getElementById('view-skills'),
+            certifications: document.getElementById('view-certifications'),
+
+            // Salary Fields
+            salaryBasic: document.getElementById('view-salary-basic'),
+            salaryHra: document.getElementById('view-salary-hra'),
+            salaryAllowance: document.getElementById('view-salary-allowance'),
+            salaryGross: document.getElementById('view-salary-gross'),
 
             id: Array.from(document.querySelectorAll('span')).find(s => s.textContent.includes('ID:')),
             joined: Array.from(document.querySelectorAll('span')).find(s => s.textContent.includes('Joined')),
@@ -106,6 +119,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (els.details.ecName) els.details.ecName.textContent = data.emergency_contact_name || 'Not Set';
                 if (els.details.ecRelation) els.details.ecRelation.textContent = data.emergency_contact_relation ? `Relation: ${data.emergency_contact_relation}` : '';
                 if (els.details.ecPhone) els.details.ecPhone.textContent = data.emergency_contact_phone || '';
+
+                // Resume Data
+                if (els.details.aboutMe) els.details.aboutMe.textContent = data.about_me || '-';
+                if (els.details.jobLove) els.details.jobLove.textContent = data.job_love || '-';
+                if (els.details.interests) els.details.interests.textContent = data.interests || '-';
+                if (els.details.skills) els.details.skills.textContent = data.skills || '-';
+                if (els.details.certifications) els.details.certifications.textContent = data.certifications || '-';
+
+                // Salary Data
+                // Salary Data
+                const formatCurrency = (val) => {
+                    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(val || 0);
+                };
+
+                if (document.getElementById('view-salary-basic')) document.getElementById('view-salary-basic').textContent = formatCurrency(data.salary_basic);
+                if (document.getElementById('view-salary-hra')) document.getElementById('view-salary-hra').textContent = formatCurrency(data.salary_hra);
+                if (document.getElementById('view-salary-sa')) document.getElementById('view-salary-sa').textContent = formatCurrency(data.salary_sa);
+                if (document.getElementById('view-salary-pb')) document.getElementById('view-salary-pb').textContent = formatCurrency(data.salary_pb);
+                if (document.getElementById('view-salary-lta')) document.getElementById('view-salary-lta').textContent = formatCurrency(data.salary_lta);
+                if (document.getElementById('view-salary-fixed')) document.getElementById('view-salary-fixed').textContent = formatCurrency(data.salary_fixed);
+                if (document.getElementById('view-salary-wage')) document.getElementById('view-salary-wage').textContent = formatCurrency(data.salary_wage); // Gross
+
+                if (document.getElementById('view-salary-pf')) document.getElementById('view-salary-pf').textContent = formatCurrency(data.salary_pf_employee);
+                if (document.getElementById('view-salary-pt')) document.getElementById('view-salary-pt').textContent = formatCurrency(data.salary_pt);
+
+                // Deductions Sum
+                const totalDeductions = (data.salary_pf_employee || 0) + (data.salary_pt || 0);
+                if (document.getElementById('view-salary-deductions')) document.getElementById('view-salary-deductions').textContent = formatCurrency(totalDeductions);
+
+                if (document.getElementById('view-salary-net')) document.getElementById('view-salary-net').textContent = formatCurrency(data.salary_net);
 
                 if (els.details.id) els.details.id.textContent = `ID: ${data.employee_code}`;
                 if (els.details.joined) els.details.joined.textContent = `Joined ${data.joining_date}`;
