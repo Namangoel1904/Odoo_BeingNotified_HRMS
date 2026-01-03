@@ -44,6 +44,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 Utils.saveToken(data.access_token);
 
                 const payload = Utils.parseJwt(data.access_token);
+
+                // Check Email Verification
+                if (data.is_verified === false) {
+                    window.location.href = 'verify-email.html';
+                    return;
+                }
+
                 if (payload.must_change_password) {
                     window.location.href = 'change-password.html';
                 } else {

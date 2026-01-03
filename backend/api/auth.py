@@ -40,7 +40,23 @@ def login(login_data: LoginSchema, db: Session = Depends(get_db)):
         role=user.role.value,
         must_change_password=user.must_change_password
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "access_token": access_token, 
+        "token_type": "bearer",
+        "is_verified": user.is_verified
+    }
+
+@router.post("/verify-email")
+def verify_email(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.is_verified:
+        return {"message": "Email already verified"}
+    
+    current_user.is_verified = True
+    db.commit()
+    return {"message": "Email verified successfully"}
 
 @router.post("/change-password")
 def change_password(

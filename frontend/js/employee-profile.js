@@ -25,11 +25,35 @@ document.addEventListener('DOMContentLoaded', () => {
         ecPhone: document.getElementById('ecPhone'),
         ecRelation: document.getElementById('ecRelation'),
 
+        // Resume Fields
+        aboutMe: document.getElementById('aboutMe'),
+        jobLove: document.getElementById('jobLove'),
+        interests: document.getElementById('interests'),
+        skills: document.getElementById('skills'),
+        certifications: document.getElementById('certifications'),
+
         // Read-only displays
         employeeCode: document.getElementById('employeeCode'),
         department: document.getElementById('department'),
         jobTitle: document.getElementById('jobTitle'),
-        joiningDate: document.getElementById('joiningDate')
+        joiningDate: document.getElementById('joiningDate'),
+
+        // Salary Fields
+        salaryBasic: document.getElementById('salaryBasic'),
+        salaryHRA: document.getElementById('salaryHRA'),
+        salarySA: document.getElementById('salarySA'),
+        salaryPB: document.getElementById('salaryPB'),
+        salaryLTA: document.getElementById('salaryLTA'),
+        salaryFixed: document.getElementById('salaryFixed'),
+        salaryWage: document.getElementById('salaryWage'),
+        salaryPF: document.getElementById('salaryPF'),
+        salaryPT: document.getElementById('salaryPT'),
+        salaryDeductions: document.getElementById('salaryDeductions'),
+        salaryNet: document.getElementById('salaryNet')
+    };
+
+    const formatCurrency = (val) => {
+        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(val || 0);
     };
 
     // Logout logic
@@ -62,6 +86,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (fields.ecPhone) fields.ecPhone.value = data.emergency_contact_phone || '';
                 if (fields.ecRelation) fields.ecRelation.value = data.emergency_contact_relation || '';
 
+                // Resume Fields
+                if (fields.aboutMe) fields.aboutMe.value = data.about_me || '';
+                if (fields.jobLove) fields.jobLove.value = data.job_love || '';
+                if (fields.interests) fields.interests.value = data.interests || '';
+                if (fields.skills) fields.skills.value = data.skills || '';
+                if (fields.certifications) fields.certifications.value = data.certifications || '';
+
                 // Profile Pic
                 if (data.profile_picture_url && fields.profilePicPreview) {
                     fields.profilePicPreview.style.backgroundImage = `url('${CONFIG.API_BASE_URL}${data.profile_picture_url}')`;
@@ -73,6 +104,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (fields.department) fields.department.textContent = data.department;
                 if (fields.jobTitle) fields.jobTitle.textContent = data.job_title;
                 if (fields.joiningDate) fields.joiningDate.textContent = data.joining_date;
+
+                // Populate Salary
+                if (fields.salaryBasic) fields.salaryBasic.textContent = formatCurrency(data.salary_basic);
+                if (fields.salaryHRA) fields.salaryHRA.textContent = formatCurrency(data.salary_hra);
+                if (fields.salarySA) fields.salarySA.textContent = formatCurrency(data.salary_sa);
+                if (fields.salaryPB) fields.salaryPB.textContent = formatCurrency(data.salary_pb);
+                if (fields.salaryLTA) fields.salaryLTA.textContent = formatCurrency(data.salary_lta);
+                if (fields.salaryFixed) fields.salaryFixed.textContent = formatCurrency(data.salary_fixed);
+                if (fields.salaryWage) fields.salaryWage.textContent = formatCurrency(data.salary_wage); // Gross
+
+                if (fields.salaryPF) fields.salaryPF.textContent = formatCurrency(data.salary_pf_employee);
+                if (fields.salaryPT) fields.salaryPT.textContent = formatCurrency(data.salary_pt);
+
+                // Deductions Sum
+                const totalDeductions = (data.salary_pf_employee || 0) + (data.salary_pt || 0);
+                if (fields.salaryDeductions) fields.salaryDeductions.textContent = formatCurrency(totalDeductions);
+
+                if (fields.salaryNet) fields.salaryNet.textContent = formatCurrency(data.salary_net);
 
             } else {
                 console.error("Failed to load profile");
@@ -137,11 +186,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 personal_email: fields.personalEmail ? fields.personalEmail.value : null,
                 emergency_contact_name: fields.ecName ? fields.ecName.value : null,
                 emergency_contact_phone: fields.ecPhone ? fields.ecPhone.value : null,
-                emergency_contact_relation: fields.ecRelation ? fields.ecRelation.value : null
+                emergency_contact_relation: fields.ecRelation ? fields.ecRelation.value : null,
+
+                // Resume Fields
+                about_me: fields.aboutMe ? fields.aboutMe.value : null,
+                job_love: fields.jobLove ? fields.jobLove.value : null,
+                interests: fields.interests ? fields.interests.value : null,
+                skills: fields.skills ? fields.skills.value : null,
+                certifications: fields.certifications ? fields.certifications.value : null
             };
 
             try {
-                const btn = form.querySelector('button[type="submit"]');
+                const btn = document.getElementById('save-profile-btn') || form.querySelector('button[type="submit"]');
+                if (!btn) {
+                    console.error("Save button not found");
+                    return;
+                }
                 const originalText = btn.textContent;
                 btn.textContent = "Saving...";
                 btn.disabled = true;

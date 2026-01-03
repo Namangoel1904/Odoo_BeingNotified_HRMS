@@ -29,6 +29,13 @@ class Employee(Base, BaseModel):
     emergency_contact_phone = Column(String, nullable=True)
     emergency_contact_relation = Column(String, nullable=True)
 
+    # Resume Fields
+    about_me = Column(Text, nullable=True)
+    job_love = Column(Text, nullable=True)
+    interests = Column(Text, nullable=True)
+    skills = Column(Text, nullable=True)
+    certifications = Column(Text, nullable=True)
+
     # Relationships
     user = relationship("User", foreign_keys=[user_id], backref="employee_profile")
     created_by = relationship("User", foreign_keys=[created_by_id])

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>HR - Employee Profile - Dayflow</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Material Symbols -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#197fe6",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111921",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a2632",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col font-display">
+
+    <!-- Header -->
+    <header
+        class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark px-6 py-3 shadow-sm">
+        <div class="flex items-center gap-4">
+            <a href="hr-employees.html" class="flex items-center text-slate-500 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">arrow_back</span>
+                <span class="ml-1 text-sm font-medium">Back to Employees</span>
+            </a>
+        </div>
+        <div class="flex gap-3">
+            <h2 class="text-lg font-bold">Employee Profile View</h2>
+        </div>
+    </header>
+
+    <main class="flex-1 flex justify-center py-8 px-4 sm:px-6 lg:px-8">
+        <div class="layout-content-container flex flex-col max-w-[900px] w-full gap-6">
+
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 id="pageTitle" class="text-3xl font-bold dark:text-white">Employee Profile</h1>
+                    <p class="text-slate-500 text-sm">View and edit employee details.</p>
+                </div>
+            </div>
+
+            <form id="profile-form"
+                class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col">
+
+                <!-- Personal Details -->
+                <div class="p-6 border-b border-gray-200 dark:border-gray-800">
+                    <div class="flex items-center gap-4 mb-6">
+                        <!-- Profile Pic -->
+                        <div id="profile-pic-preview"
+                            class="size-24 rounded-full bg-gray-200 bg-center bg-cover border-4 border-white shadow-md">
+                        </div>
+                        <div>
+                            <h3 id="displayName" class="text-xl font-bold dark:text-white">Loading...</h3>
+                            <p id="displayRole" class="text-slate-500">...</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-sm font-semibold">Full Name</label>
+                            <input id="fullName" disabled
+                                class="form-input rounded-lg bg-gray-50 border-gray-200 text-gray-500 cursor-not-allowed"
+                                type="text" />
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-sm font-semibold">Email</label>
+                            <input id="email" disabled
+                                class="form-input rounded-lg bg-gray-50 border-gray-200 text-gray-500 cursor-not-allowed"
+                                type="email" />
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-sm font-semibold">Phone Number</label>
+                            <input id="phone"
+                                class="form-input rounded-lg border-gray-200 dark:border-gray-700 dark:bg-slate-900"
+                                type="tel" />
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-sm font-semibold">Address</label>
+                            <input id="address"
+                                class="form-input rounded-lg border-gray-200 dark:border-gray-700 dark:bg-slate-900"
+                                type="text" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resume Info -->
+                <div class="p-6 border-b border-gray-200 dark:border-gray-800 bg-slate-50 dark:bg-slate-800/30">
+                    <h3 class="text-lg font-bold mb-4 dark:text-white">Resume Information</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">About Me</label>
+                            <textarea id="aboutMe" rows="3"
+                                class="form-textarea w-full rounded-lg border-gray-200 dark:border-gray-700 dark:bg-slate-900"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Skills</label>
+                            <textarea id="skills" rows="3"
+                                class="form-textarea w-full rounded-lg border-gray-200 dark:border-gray-700 dark:bg-slate-900"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Interests</label>
+                            <textarea id="interests" rows="2"
+                                class="form-textarea w-full rounded-lg border-gray-200 dark:border-gray-700 dark:bg-slate-900"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="p-6 bg-gray-50 dark:bg-slate-900/50 flex justify-end gap-3">
+                    <button type="button" onclick="history.back()"
+                        class="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">Cancel</button>
+                    <button type="submit" id="saveBtn"
+                        class="px-6 py-2 rounded-lg bg-primary text-white font-medium hover:bg-primary/90 shadow-sm">Save
+                        Changes</button>
+                </div>
+
+            </form>
+        </div>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/hr-employee-view.js"></script>
+</body>
+
+</html>

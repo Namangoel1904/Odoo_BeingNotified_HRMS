@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from backend.models.user import User, UserRole
 from backend.models.employee import Employee
+from backend.models.payroll import SalaryStructure
 from backend.api.deps import get_db, get_current_active_user, RoleChecker
 from backend.schemas.employee import EmployeeProfileResponse, EmployeeProfileUpdate
 
@@ -18,6 +19,9 @@ def get_employee_profile(
     if not employee:
         raise HTTPException(status_code=404, detail="Employee profile not found")
     
+    # Fetch Salary Structure
+    salary = db.query(SalaryStructure).filter(SalaryStructure.employee_id == employee.id).first()
+    
     return EmployeeProfileResponse.model_validate(
         {
             "full_name": employee.full_name,
@@ -27,16 +31,36 @@ def get_employee_profile(
             "job_title": employee.job_title,
             "joining_date": employee.date_of_joining,
             "address": employee.address,
-            "address": employee.address,
             "profile_picture_url": employee.profile_picture_url,
             "employee_code": employee.employee_code,
+            
+            # Enhanced Fields
             "gender": employee.gender,
             "marital_status": employee.marital_status,
             "nationality": employee.nationality,
             "personal_email": employee.personal_email,
             "emergency_contact_name": employee.emergency_contact_name,
             "emergency_contact_phone": employee.emergency_contact_phone,
-            "emergency_contact_relation": employee.emergency_contact_relation
+            "emergency_contact_relation": employee.emergency_contact_relation,
+            
+            # Resume Fields
+            "about_me": employee.about_me,
+            "job_love": employee.job_love,
+            "interests": employee.interests,
+            "skills": employee.skills,
+            "certifications": employee.certifications,
+
+            # Salary Data
+            "salary_wage": salary.wage if salary else 0,
+            "salary_basic": salary.basic_component if salary else 0,
+            "salary_hra": salary.hra_component if salary else 0,
+            "salary_sa": salary.standard_allowance if salary else 0,
+            "salary_pb": salary.performance_bonus if salary else 0,
+            "salary_lta": salary.leave_travel_allowance if salary else 0,
+            "salary_fixed": salary.fixed_allowance if salary else 0,
+            "salary_pf_employee": salary.pf_employee_amount if salary else 0,
+            "salary_pt": salary.professional_tax if salary else 0,
+            "salary_net": (salary.wage - salary.pf_employee_amount - salary.professional_tax) if salary else 0
         }
     )
 
@@ -67,8 +91,18 @@ def update_employee_profile(
     employee.emergency_contact_phone = profile_data.emergency_contact_phone
     employee.emergency_contact_relation = profile_data.emergency_contact_relation
     
+    # Update Resume Fields
+    employee.about_me = profile_data.about_me
+    employee.job_love = profile_data.job_love
+    employee.interests = profile_data.interests
+    employee.skills = profile_data.skills
+    employee.certifications = profile_data.certifications
+    
     db.commit()
     db.refresh(employee)
+    
+    # Fetch Salary for response consistency
+    salary = db.query(SalaryStructure).filter(SalaryStructure.employee_id == employee.id).first()
     
     return EmployeeProfileResponse.model_validate(
         {
@@ -87,7 +121,26 @@ def update_employee_profile(
             "personal_email": employee.personal_email,
             "emergency_contact_name": employee.emergency_contact_name,
             "emergency_contact_phone": employee.emergency_contact_phone,
-            "emergency_contact_relation": employee.emergency_contact_relation
+            "emergency_contact_relation": employee.emergency_contact_relation,
+            
+            # Resume Fields
+            "about_me": employee.about_me,
+            "job_love": employee.job_love,
+            "interests": employee.interests,
+            "skills": employee.skills,
+            "certifications": employee.certifications,
+
+             # Salary Data
+            "salary_wage": salary.wage if salary else 0,
+            "salary_basic": salary.basic_component if salary else 0,
+            "salary_hra": salary.hra_component if salary else 0,
+            "salary_sa": salary.standard_allowance if salary else 0,
+            "salary_pb": salary.performance_bonus if salary else 0,
+            "salary_lta": salary.leave_travel_allowance if salary else 0,
+            "salary_fixed": salary.fixed_allowance if salary else 0,
+            "salary_pf_employee": salary.pf_employee_amount if salary else 0,
+            "salary_pt": salary.professional_tax if salary else 0,
+            "salary_net": (salary.wage - salary.pf_employee_amount - salary.professional_tax) if salary else 0 
         }
     )
 
@@ -150,6 +203,26 @@ def upload_profile_picture(
             "personal_email": employee.personal_email,
             "emergency_contact_name": employee.emergency_contact_name,
             "emergency_contact_phone": employee.emergency_contact_phone,
-            "emergency_contact_relation": employee.emergency_contact_relation
+            "emergency_contact_relation": employee.emergency_contact_relation,
+            
+            # Resume Fields
+            "about_me": employee.about_me,
+            "job_love": employee.job_love,
+            "interests": employee.interests,
+            "skills": employee.skills,
+            "certifications": employee.certifications,
+
+            # Salary Data (Empty or defaults here is fine, typically upload doesn't need full context but consistent schema requires it)
+            # Salary Data
+            "salary_wage": 0,
+            "salary_basic": 0,
+            "salary_hra": 0,
+            "salary_sa": 0,
+            "salary_pb": 0,
+            "salary_lta": 0,
+            "salary_fixed": 0,
+            "salary_pf_employee": 0,
+            "salary_pt": 0,
+            "salary_net": 0
         }
     )

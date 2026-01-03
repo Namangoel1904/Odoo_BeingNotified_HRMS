@@ -21,7 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 department: formData.get('department'),
                 job_title: formData.get('jobTitle'),
                 joining_date: formData.get('joiningDate'),
-                joining_year: parseInt(formData.get('joiningYear'))
+                joining_year: parseInt(formData.get('joiningYear')),
+                monthly_wage: parseFloat(formData.get('monthlyWage'))
             };
 
             // Basic Client validation

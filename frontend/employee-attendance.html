@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Dayflow - Attendance</title>
+    <!-- Material Symbols Link -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Theme Configuration -->
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#197fe6",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111921",
+                        "slate-850": "#1a202c",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&amp;display=swap"
+        rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white h-screen overflow-hidden flex selection:bg-primary/20 selection:text-primary">
+    <!-- Sidebar -->
+    <aside
+        class="w-64 h-full bg-white dark:bg-[#1a222c] border-r border-slate-200 dark:border-slate-800 flex flex-col flex-shrink-0 transition-colors duration-300">
+        <div class="p-6 pb-2">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
+                    <span class="material-symbols-outlined text-[20px]">waves</span>
+                </div>
+                <div class="flex flex-col">
+                    <h1 class="text-slate-900 dark:text-white text-lg font-bold leading-none tracking-tight">Dayflow
+                    </h1>
+                    <p class="text-slate-500 dark:text-slate-400 text-xs font-medium">HRMS Portal</p>
+                </div>
+            </div>
+        </div>
+        <!-- Navigation Menu -->
+        <nav class="flex-1 flex flex-col gap-1 px-4 py-6 overflow-y-auto">
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white transition-colors"
+                href="employee-dashboard.html">
+                <span class="material-symbols-outlined text-[22px]">dashboard</span>
+                <span class="text-sm font-medium">Dashboard</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary dark:bg-primary/20 dark:text-blue-400 transition-colors group"
+                href="employee-attendance.html">
+                <span class="material-symbols-outlined text-[22px]" data-weight="fill">schedule</span>
+                <span class="text-sm font-semibold">Attendance</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white transition-colors"
+                href="employee-leaves.html">
+                <span class="material-symbols-outlined text-[22px]">event_available</span>
+                <span class="text-sm font-medium">Leave Requests</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white transition-colors"
+                href="employee-tickets.html">
+                <span class="material-symbols-outlined text-[22px]">confirmation_number</span>
+                <span class="text-sm font-medium">Tickets</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white transition-colors"
+                href="my-profile.html">
+                <span class="material-symbols-outlined text-[22px]">person</span>
+                <span class="text-sm font-medium">My Profile</span>
+            </a>
+        </nav>
+        <!-- Logout -->
+        <div class="p-4 border-t border-slate-200 dark:border-slate-800">
+            <button id="logout-btn"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors">
+                <span class="material-symbols-outlined text-[22px]">logout</span>
+                <span class="text-sm font-medium">Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <header
+            class="flex-shrink-0 flex items-center justify-between px-8 py-4 bg-background-light dark:bg-background-dark border-b border-transparent">
+            <div class="hidden md:flex text-sm text-slate-500 dark:text-slate-400">
+                <span>Portal</span>
+                <span class="mx-2">/</span>
+                <span class="font-medium text-slate-900 dark:text-white">Attendance</span>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 pt-4">
+            <div class="max-w-5xl mx-auto flex flex-col gap-8">
+                <div class="flex flex-col gap-1">
+                    <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Attendance History 📅
+                    </h2>
+                    <p class="text-slate-500 dark:text-slate-400 text-base">View your check-in and check-out history.
+                    </p>
+                </div>
+
+                <!-- Today's Status (Quick Action) -->
+                <div
+                    class="bg-white dark:bg-[#1a222c] rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white">Today's Status</h3>
+                        <p id="today-status" class="text-slate-500 text-sm">Loading...</p>
+                    </div>
+                    <div id="action-container">
+                        <!-- Buttons injected via JS -->
+                    </div>
+                </div>
+
+                <!-- History Table -->
+                <div
+                    class="bg-white dark:bg-[#1a222c] rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr
+                                    class="bg-slate-50 dark:bg-slate-800/50 text-xs text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                    <th class="px-6 py-4 font-semibold uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-4 font-semibold uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-4 font-semibold uppercase tracking-wider">Check In</th>
+                                    <th class="px-6 py-4 font-semibold uppercase tracking-wider">Check Out</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendance-table-body"
+                                class="text-sm divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Rows injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/attendance.js"></script>
+</body>
+
+</html>

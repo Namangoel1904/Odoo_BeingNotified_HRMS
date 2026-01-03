@@ -8,6 +8,7 @@ class LoginSchema(BaseModel):
 class TokenSchema(BaseModel):
     access_token: str
     token_type: str
+    is_verified: bool
 
 class ChangePasswordSchema(BaseModel):
     new_password: str
